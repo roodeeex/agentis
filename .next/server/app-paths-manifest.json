@@ -1,0 +1,6 @@
+{
+  "/marketplace/page": "app/marketplace/page.js",
+  "/agent/[id]/page": "app/agent/[id]/page.js",
+  "/forge/page": "app/forge/page.js",
+  "/page": "app/page.js"
+}
