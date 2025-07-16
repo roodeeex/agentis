@@ -310,6 +310,7 @@ export default function LandingPage() {
           >
             <motion.button
               className="bg-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-orange-700 transition-colors"
+              onClick={() => router.push('/marketplace')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -336,6 +337,7 @@ export default function LandingPage() {
             
             <motion.button
               className="bg-white text-orange-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center space-x-2"
+              onClick={() => router.push('/forge')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

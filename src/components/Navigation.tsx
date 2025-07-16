@@ -73,7 +73,7 @@ export default function Navigation() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Get Started
+              Connect Wallet
             </motion.button>
           </div>
 
@@ -121,7 +121,7 @@ export default function Navigation() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Get Started
+                Connect Wallet
               </motion.button>
             </div>
           </motion.div>

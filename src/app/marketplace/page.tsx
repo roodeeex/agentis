@@ -12,12 +12,14 @@ export default function MarketplacePage() {
   const [displayedAgents, setDisplayedAgents] = useState<any[]>([])
   const [filteredAgents, setFilteredAgents] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  // Remove categories for MVP
+  // const [selectedCategory, setSelectedCategory] = useState('All')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [agentsPerPage] = useState(6)
   const [currentPage, setCurrentPage] = useState(1)
 
-  const categories = ['All', 'Data Analysis', 'Content Creation', 'Trading', 'Automation', 'Research']
+  // Remove categories for MVP
+  // const categories = ['All', 'Data Analysis', 'Content Creation', 'Trading', 'Automation', 'Research']
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -52,13 +54,14 @@ export default function MarketplacePage() {
       )
     }
 
-    if (selectedCategory !== 'All') {
-      filtered = filtered.filter(agent => agent.category === selectedCategory)
-    }
+    // Remove category filter logic in useEffect
+    // if (selectedCategory !== 'All') {
+    //   filtered = filtered.filter(agent => agent.category === selectedCategory)
+    // }
 
     setFilteredAgents(filtered)
     setCurrentPage(1) // Reset to first page when filters change
-  }, [searchTerm, selectedCategory, allAgents])
+  }, [searchTerm, allAgents])
 
   useEffect(() => {
     const startIndex = 0
@@ -72,9 +75,10 @@ export default function MarketplacePage() {
 
   const hasMoreAgents = displayedAgents.length < filteredAgents.length
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category)
-  }
+  // Remove category select in the search/filter bar
+  // const handleCategorySelect = (category: string) => {
+  //   setSelectedCategory(category)
+  // }
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -116,7 +120,8 @@ export default function MarketplacePage() {
                 />
               </div>
               
-              <div className="flex items-center space-x-4">
+              {/* Remove category select in the search/filter bar */}
+              {/* <div className="flex items-center space-x-4">
                 <select
                   className="px-4 py-3 rounded-lg border border-border-primary focus:outline-none focus:ring-2 focus:ring-orange-primary bg-bg-primary text-text-primary"
                   value={selectedCategory}
@@ -143,7 +148,7 @@ export default function MarketplacePage() {
                     <List className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
+              </div> */}
             </div>
           </motion.div>
 
@@ -226,8 +231,8 @@ export default function MarketplacePage() {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-16 px-4">
+      {/* Remove Popular Categories section */}
+      {/* <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-12"
@@ -273,7 +278,7 @@ export default function MarketplacePage() {
             })}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Stats Section */}
       <section className="py-16 px-4 bg-bg-secondary">
@@ -281,7 +286,7 @@ export default function MarketplacePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { label: 'Total Agents', value: allAgents.length.toString(), change: 'Live count', icon: Bot },
-              { label: 'Categories', value: (categories.length - 1).toString(), change: 'Available now', icon: Folder },
+              { label: 'Categories', value: 'N/A', change: 'Available now', icon: Folder },
               { label: 'Active Now', value: Math.floor(allAgents.length * 0.8).toString(), change: 'Online agents', icon: Activity },
               { label: 'Avg. Rating', value: '4.8/5', change: 'User rated', icon: Star }
             ].map((stat, index) => (

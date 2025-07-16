@@ -22,7 +22,6 @@ export default function ForgePage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
     description: '',
     capabilities: [] as string[],
     endpoint: '',
@@ -34,7 +33,6 @@ export default function ForgePage() {
   const [previewAgent, setPreviewAgent] = useState({
     id: 999,
     name: 'Your Agent',
-    category: 'Select Category',
     description: 'Enter a description for your agent...',
     creator: '0x1234...5678',
     price: 0.1,
@@ -51,25 +49,12 @@ export default function ForgePage() {
     { id: 4, title: 'Preview & Deploy', icon: Rocket },
   ]
 
-  const categories = [
-    'Data Analysis',
-    'Content Creation',
-    'Trading',
-    'Automation',
-    'Research',
-    'Customer Support',
-    'Marketing',
-    'Development'
-  ]
-
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // Update preview
     if (field === 'name') {
       setPreviewAgent(prev => ({ ...prev, name: value || 'Your Agent' }))
-    } else if (field === 'category') {
-      setPreviewAgent(prev => ({ ...prev, category: value || 'Select Category' }))
     } else if (field === 'description') {
       setPreviewAgent(prev => ({ ...prev, description: value || 'Enter a description for your agent...' }))
     } else if (field === 'price') {
@@ -105,22 +90,6 @@ export default function ForgePage() {
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Category *
-              </label>
-              <select
-                className="w-full px-4 py-3 rounded-lg border border-border-primary focus:outline-none focus:ring-2 focus:ring-orange-primary bg-bg-primary text-text-primary"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-              >
-                <option value="">Select a category</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
             </div>
 
             <div>
@@ -161,88 +130,34 @@ export default function ForgePage() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
-                API Endpoint *
+                Delivery URI *
               </label>
               <input
                 type="url"
                 className="w-full px-4 py-3 rounded-lg border border-border-primary focus:outline-none focus:ring-2 focus:ring-orange-primary bg-bg-primary text-text-primary"
-                placeholder="https://your-api.com/agent"
+                placeholder="https://your-delivery-uri.com/agent"
                 value={formData.endpoint}
                 onChange={(e) => handleInputChange('endpoint', e.target.value)}
               />
               <p className="text-sm text-text-muted mt-2">
-                The endpoint where your agent will receive requests
+                The URI where your agent will deliver responses
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
-                Capabilities *
+                Delivery Spec URI *
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  'Text Processing',
-                  'Image Analysis',
-                  'Data Analysis',
-                  'API Integration',
-                  'File Processing',
-                  'Real-time Chat',
-                  'Scheduled Tasks',
-                  'Custom Logic'
-                ].map(capability => (
-                  <label key={capability} className="flex items-center space-x-2 p-3 rounded-lg border border-border-primary hover:bg-bg-secondary cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="rounded text-orange-600 focus:ring-orange-500"
-                      checked={formData.capabilities.includes(capability)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          handleInputChange('capabilities', [...formData.capabilities, capability])
-                        } else {
-                          handleInputChange('capabilities', formData.capabilities.filter(c => c !== capability))
-                        }
-                      }}
-                    />
-                    <span className="text-text-primary">{capability}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Authentication Method
-              </label>
-              <select className="w-full px-4 py-3 rounded-lg border border-border-primary focus:outline-none focus:ring-2 focus:ring-orange-primary bg-bg-primary text-text-primary">
-                <option>API Key</option>
-                <option>OAuth 2.0</option>
-                <option>JWT Token</option>
-                <option>No Authentication</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Rate Limiting
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <input
-                    type="number"
-                    className="w-full px-4 py-3 rounded-lg border border-border-primary focus:outline-none focus:ring-2 focus:ring-orange-primary bg-bg-primary text-text-primary"
-                    placeholder="100"
-                  />
-                  <p className="text-sm text-text-muted mt-1">Requests per minute</p>
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    className="w-full px-4 py-3 rounded-lg border border-border-primary focus:outline-none focus:ring-2 focus:ring-orange-primary bg-bg-primary text-text-primary"
-                    placeholder="1000"
-                  />
-                  <p className="text-sm text-text-muted mt-1">Requests per hour</p>
-                </div>
-              </div>
+              <input
+                type="url"
+                className="w-full px-4 py-3 rounded-lg border border-border-primary focus:outline-none focus:ring-2 focus:ring-orange-primary bg-bg-primary text-text-primary"
+                placeholder="https://your-delivery-spec-uri.com/agent"
+                value={formData.endpoint}
+                onChange={(e) => handleInputChange('endpoint', e.target.value)}
+              />
+              <p className="text-sm text-text-muted mt-2">
+                The URI for your agent's delivery specification
+              </p>
             </div>
           </div>
         )
@@ -281,8 +196,8 @@ export default function ForgePage() {
                   <span className="text-text-primary font-semibold">85%</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-text-secondary">Platform fee</span>
-                  <span className="text-text-primary font-semibold">15%</span>
+                  <span className="text-text-secondary">Protocol fee</span>
+                  <span className="text-text-primary font-semibold">5%</span>
                 </div>
                 <div className="border-t border-border-primary mt-2 pt-2">
                   <div className="flex justify-between items-center">
@@ -328,29 +243,6 @@ export default function ForgePage() {
                 </label>
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Usage Analytics
-              </label>
-              <div className="space-y-2">
-                {[
-                  'Track request volume',
-                  'Monitor response times',
-                  'User engagement metrics',
-                  'Revenue analytics'
-                ].map(feature => (
-                  <label key={feature} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="rounded text-orange-600 focus:ring-orange-500"
-                    />
-                    <span className="text-text-primary">{feature}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
           </div>
         )
 
@@ -375,8 +267,8 @@ export default function ForgePage() {
                     <span className="text-text-primary">{formData.name || 'Not set'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-text-secondary">Category:</span>
-                    <span className="text-text-primary">{formData.category || 'Not set'}</span>
+                    <span className="text-text-secondary">Description:</span>
+                    <span className="text-text-primary">{formData.description || 'Not set'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-text-secondary">Price:</span>
