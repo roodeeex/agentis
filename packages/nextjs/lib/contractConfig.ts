@@ -1,4 +1,5 @@
-import TesseractABI from "../../../packages/foundry/out/Tesseract.sol/Tesseract.json";
+// @ts-ignore
+import TesseractABI from "../src/abi/Tesseract.json";
 
 const TESSERACT_CONTRACT_ADDRESS = "0xDB35E24179ccb7c010Ec5C99cc952105c80789Eb";
 
