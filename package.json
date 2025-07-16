@@ -10,3 +10,8 @@
     "contracts": "cd packages/foundry && make"
   }
 } 
+{
+  "scripts": {
+    "vercel-build": "cd packages/foundry && forge build && cp packages/foundry/out/Tesseract.sol/Tesseract.json packages/nextjs/src/abi/Tesseract.json && cd ../../nextjs && yarn build"
+  }
+}
