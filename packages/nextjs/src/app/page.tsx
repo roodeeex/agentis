@@ -25,7 +25,7 @@ export default function LandingPage() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="h-screen flex items-center justify-center px-4 pt-20 relative overflow-hidden">
+      <section className="h-screen flex items-center justify-center px-4 pt-32 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>

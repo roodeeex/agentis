@@ -40,8 +40,9 @@ export default function ForgePage() {
     bio: '',
     imageURI: '',
     contact: '',
-    deliveryURI: '',
-    deliverySpecURI: '',
+    outputURI: '',
+    inputSpecsURI: '',
+    outputSpecsURI: '', // Added for the new contract
     pricePerTask: '',
   })
   
@@ -122,9 +123,9 @@ export default function ForgePage() {
         const tx = await contract.createService(
           result.agentId,
           formData.bio, // description
-          formData.deliveryURI,
-          formData.deliverySpecURI,
-          formData.deliverySpecURI, // outputSpecsURI (using same as deliverySpecURI for now)
+          formData.outputURI,
+          formData.inputSpecsURI,
+          formData.outputSpecsURI,
           ethers.utils.parseEther(formData.pricePerTask || '0')
         )
         const receipt = await tx.wait()
@@ -157,7 +158,7 @@ export default function ForgePage() {
       case 1:
         return formData.name.trim() !== '' && formData.bio.trim() !== ''
       case 2:
-        return formData.deliveryURI.trim() !== '' && formData.deliverySpecURI.trim() !== ''
+        return formData.outputURI.trim() !== '' && formData.inputSpecsURI.trim() !== '' && formData.outputSpecsURI.trim() !== ''
       case 3:
         return formData.pricePerTask.trim() !== '' && parseFloat(formData.pricePerTask) > 0
       case 4:
@@ -386,33 +387,49 @@ export default function ForgePage() {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-text-primary mb-2">
-                      Delivery URI *
+                      Output URI *
                     </label>
                     <input
                       type="url"
-                      value={formData.deliveryURI}
-                      onChange={(e) => updateFormData('deliveryURI', e.target.value)}
+                      value={formData.outputURI}
+                      onChange={(e) => updateFormData('outputURI', e.target.value)}
                       className="w-full px-4 py-3 border border-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                       placeholder="https://api.example.com/agent/deliver"
                     />
                     <p className="text-sm text-text-secondary mt-1">
-                      The endpoint where your agent will deliver completed tasks
+                      The endpoint where your agent will deliver completed tasks.
                     </p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-text-primary mb-2">
-                      Delivery Spec URI *
+                      Input Specs URI *
                     </label>
                     <input
                       type="url"
-                      value={formData.deliverySpecURI}
-                      onChange={(e) => updateFormData('deliverySpecURI', e.target.value)}
-                      className="w-full px-4 py-3 border border-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="https://docs.example.com/agent/spec"
+                      value={formData.inputSpecsURI}
+                      onChange={(e) => updateFormData('inputSpecsURI', e.target.value)}
+                      className="w-full px-4 py-3 border border-border-primary rounded-lg focus:outline-none focus:ring-purple-500"
+                      placeholder="https://docs.example.com/agent/input-spec"
                     />
                     <p className="text-sm text-text-secondary mt-1">
-                      Documentation URL describing your agent's input/output specifications
+                      Documentation URL for your agent's input specifications.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">
+                      Output Specs URI *
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.outputSpecsURI}
+                      onChange={(e) => updateFormData('outputSpecsURI', e.target.value)}
+                      className="w-full px-4 py-3 border border-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="https://docs.example.com/agent/output-spec"
+                    />
+                    <p className="text-sm text-text-secondary mt-1">
+                      Documentation URL for your agent's output specifications.
                     </p>
                   </div>
 
@@ -422,9 +439,9 @@ export default function ForgePage() {
                       <div>
                         <h3 className="font-semibold text-text-primary">Technical Requirements</h3>
                         <ul className="text-sm text-text-secondary mt-2 space-y-1">
-                          <li>• Delivery URI should be a valid HTTPS endpoint</li>
-                          <li>• Delivery Spec URI should contain detailed API documentation</li>
-                          <li>• Both URLs must be publicly accessible</li>
+                          <li>• URIs should be valid HTTPS endpoints</li>
+                          <li>• Spec URIs should contain detailed API documentation</li>
+                          <li>• All URLs must be publicly accessible</li>
                           <li>• Specifications should include input/output formats</li>
                         </ul>
                       </div>

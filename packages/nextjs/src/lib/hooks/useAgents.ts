@@ -1,172 +1,136 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
-import { getTesseractContract, sepoliaProvider } from '../web3';
-import type { Agent } from '../web3';
+import { useWeb3 } from './useWeb3';
+import { Agent } from '../web3';
+
+export interface AgentWithPrice extends Agent {
+  price?: string;
+}
 
 export const useAgents = () => {
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const { getContract, isConnected } = useWeb3();
+  const [agents, setAgents] = useState<AgentWithPrice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAgents = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const contract = getTesseractContract(sepoliaProvider);
-      
-      // Get total agent count
-      const agentCount = await contract.agentCounter();
-      const count = agentCount.toNumber();
-
-      if (count === 0) {
-        setAgents([]);
+    if (!isConnected) {
         setIsLoading(false);
         return;
       }
 
-      // Fetch all agents
-      const agentPromises = [];
-      for (let i = 1; i <= count; i++) {
-        agentPromises.push(contract.idToAgent(i));
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const contract = getContract();
+      if (!contract) {
+        throw new Error("Contract not initialized");
       }
 
-      const agentResults = await Promise.all(agentPromises);
-      
-      const formattedAgents: Agent[] = agentResults.map((agent, index) => ({
-        id: (index + 1).toString(),
-        name: agent.name,
-        bio: agent.bio,
-        imageURI: agent.imageURI,
-        contact: agent.contact,
-        owner: agent.owner,
-      }));
+      console.log('Fetching agents from contract at:', contract.address); // DEBUG LOG
 
-      setAgents(formattedAgents);
+      const agentCounter = await contract.agentCounter();
+      const agentCount = parseInt(agentCounter.toString());
+      
+      console.log('Agent counter from contract:', agentCount); // DEBUG LOG
+
+      const agentsList: AgentWithPrice[] = [];
+
+      for (let i = 0; i < agentCount; i++) {
+        try {
+          const agentData = await contract.idToAgent(i);
+          console.log(`Agent ${i} data:`, agentData); // DEBUG LOG
+          
+          if (agentData.owner !== ethers.constants.AddressZero) {
+            const agent: AgentWithPrice = {
+              id: agentData.id.toString(),
+              name: agentData.name,
+              bio: agentData.bio,
+              imageURI: agentData.imageURI,
+              contact: agentData.contact,
+              owner: agentData.owner,
+            };
+
+            const serviceIds = await contract.getAgentServices(agent.id);
+            if (serviceIds && serviceIds.length > 0) {
+              const firstService = await contract.idToService(serviceIds[0]);
+              agent.price = ethers.utils.formatEther(firstService.price);
+            }
+
+            agentsList.push(agent);
+          }
+        } catch (e) {
+          console.warn(`Could not fetch agent with ID ${i}, it might have been deleted.`, e);
+        }
+      }
+
+      console.log('Final agents list:', agentsList); // DEBUG LOG
+      setAgents(agentsList);
     } catch (err: any) {
       console.error('Error fetching agents:', err);
-      setError(err.message || 'Failed to fetch agents');
+      let errorMessage = 'Failed to fetch agents. Please refresh the page.';
+      if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [getContract, isConnected]);
 
   useEffect(() => {
     fetchAgents();
   }, [fetchAgents]);
 
-  return {
-    agents,
-    isLoading,
-    error,
-    refetch: fetchAgents,
-  };
+  return { agents, isLoading, error, refetch: fetchAgents };
 };
 
-export const useAgent = (agentId: string) => {
+export const useAgent = (agentId: string | null) => {
+  const { getContract, isConnected } = useWeb3();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAgent = useCallback(async () => {
-    if (!agentId) return;
+    if (!isConnected || !agentId) {
+      setIsLoading(false);
+      return;
+    }
 
-    try {
       setIsLoading(true);
       setError(null);
 
-      const contract = getTesseractContract(sepoliaProvider);
+    try {
+      const contract = getContract();
+      if (!contract) {
+        throw new Error("Contract not initialized");
+      }
       const agentData = await contract.idToAgent(agentId);
 
-      const formattedAgent: Agent = {
-        id: agentId,
+      if (agentData.owner === ethers.constants.AddressZero) {
+        throw new Error('Agent not found.');
+      }
+
+      setAgent({
+        id: agentData.id.toString(),
         name: agentData.name,
         bio: agentData.bio,
         imageURI: agentData.imageURI,
         contact: agentData.contact,
         owner: agentData.owner,
-      };
-
-      setAgent(formattedAgent);
+      });
     } catch (err: any) {
-      console.error('Error fetching agent:', err);
-      setError(err.message || 'Failed to fetch agent');
+      console.error(`Error fetching agent ${agentId}:`, err);
+      setError('Failed to fetch agent details.');
     } finally {
       setIsLoading(false);
     }
-  }, [agentId]);
+  }, [getContract, isConnected, agentId]);
 
   useEffect(() => {
     fetchAgent();
   }, [fetchAgent]);
 
-  return {
-    agent,
-    isLoading,
-    error,
-    refetch: fetchAgent,
-  };
-};
-
-export const useUserAgents = (userAddress: string | null) => {
-  const [userAgents, setUserAgents] = useState<Agent[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUserAgents = useCallback(async () => {
-    if (!userAddress) {
-      setUserAgents([]);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const contract = getTesseractContract(sepoliaProvider);
-      
-      // Get agent IDs owned by user
-      const agentIds = await contract.getAgentsByOwner(userAddress);
-      
-      if (agentIds.length === 0) {
-        setUserAgents([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // Fetch details for each agent
-      const agentPromises = agentIds.map((id: ethers.BigNumber) => 
-        contract.idToAgent(id.toNumber())
-      );
-
-      const agentResults = await Promise.all(agentPromises);
-      
-      const formattedAgents: Agent[] = agentResults.map((agent, index) => ({
-        id: agentIds[index].toString(),
-        name: agent.name,
-        bio: agent.bio,
-        imageURI: agent.imageURI,
-        contact: agent.contact,
-        owner: agent.owner,
-      }));
-
-      setUserAgents(formattedAgents);
-    } catch (err: any) {
-      console.error('Error fetching user agents:', err);
-      setError(err.message || 'Failed to fetch user agents');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userAddress]);
-
-  useEffect(() => {
-    fetchUserAgents();
-  }, [fetchUserAgents]);
-
-  return {
-    userAgents,
-    isLoading,
-    error,
-    refetch: fetchUserAgents,
-  };
+  return { agent, isLoading, error, refetch: fetchAgent };
 }; 

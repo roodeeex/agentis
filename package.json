@@ -7,8 +7,6 @@
   ],
   "scripts": {
     "frontend": "yarn workspace agentis dev",
-    "contracts": "cd packages/foundry && make",
-    "vercel-build": "cd packages/foundry && forge build && mkdir -p ../nextjs/src/abi && cp out/Tesseract.sol/Tesseract.json ../nextjs/src/abi/Tesseract.json && cd ../nextjs && yarn build"
+    "contracts": "cd packages/foundry && make"
   }
 } 
-

@@ -1,7 +1,6 @@
-// @ts-ignore
-import TesseractABI from "../src/abi/Tesseract.json";
+import TesseractABI from '@/abi/Tesseract.json';
 
-const TESSERACT_CONTRACT_ADDRESS = "0xDB35E24179ccb7c010Ec5C99cc952105c80789Eb";
+const TESSERACT_CONTRACT_ADDRESS = "0xD4282819b3CC1599009d5ECa739CAB665326f519";
 
 export const contractConfig = {
   address: TESSERACT_CONTRACT_ADDRESS,

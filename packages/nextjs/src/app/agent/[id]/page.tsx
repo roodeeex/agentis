@@ -7,13 +7,16 @@ import { useState, useEffect } from 'react'
 import { useAgent } from '@/lib/hooks/useAgents'
 import { useWeb3 } from '@/lib/hooks/useWeb3'
 import { getTesseractContract, sepoliaProvider } from '@/lib/web3'
+import { useRequestOrder } from '@/lib/hooks/useRequestOrder'
+import { Toaster, toast } from 'react-hot-toast'
 
 export default function AgentDetailPage() {
   const params = useParams()
   const router = useRouter()
   const agentId = params.id as string
-  const { agent, isLoading, error } = useAgent(agentId)
+  const { agent, isLoading: isAgentLoading, error } = useAgent(agentId)
   const { isConnected, address } = useWeb3()
+  const { requestOrder, isLoading: isRequesting, isSuccess, orderId: newOrderId, error: requestError, reset } = useRequestOrder()
   const [copied, setCopied] = useState(false)
   const [serviceId, setServiceId] = useState<string | null>(null)
 
@@ -29,6 +32,33 @@ export default function AgentDetailPage() {
     }
     fetchServiceId()
   }, [agentId])
+  
+  useEffect(() => {
+    if (requestError) {
+      toast.error(`Error: ${requestError}`)
+      reset()
+    }
+    if (isSuccess && newOrderId) {
+      toast.success(`Successfully requested Order #${newOrderId}!`)
+      reset()
+    }
+  }, [isSuccess, newOrderId, requestError, reset])
+
+  const handleRequestService = async () => {
+    if (!serviceId) return
+    
+    // NOTE: The contract expects these extra fields.
+    // In a real app, you would have a form to collect this data.
+    const dummyOrderData = {
+      serviceId: parseInt(serviceId),
+      objQuestions: [],
+      subjQuestions: [],
+      objWeights: [],
+      subjWeights: [],
+    }
+    
+    await requestOrder(dummyOrderData)
+  }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -45,7 +75,7 @@ export default function AgentDetailPage() {
   const placeholderUsers = agent ? 10 + (parseInt(agent.id) % 50) : 10
   const placeholderUptime = agent ? 95 + (parseInt(agent.id) % 5) : 95
 
-  if (isLoading) {
+  if (isAgentLoading) {
     return (
       <div className="min-h-screen bg-bg-primary pt-24 pb-12">
         <div className="max-w-4xl mx-auto px-4">
@@ -86,7 +116,8 @@ export default function AgentDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary pt-24 pb-12">
+    <div className="min-h-screen bg-bg-primary pt-32 pb-12">
+      <Toaster position="top-center" />
       <div className="max-w-4xl mx-auto px-4">
         {/* Back Button */}
         <motion.button
@@ -266,74 +297,22 @@ export default function AgentDetailPage() {
             </motion.div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-8">
-            {/* Quick Actions */}
+          {/* Side Panel */}
+          <div className="lg:col-span-1 space-y-8">
             <motion.div
               className="bg-white rounded-xl p-6 border border-border-primary"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <h3 className="text-lg font-bold text-text-primary mb-4">
-                Quick Actions
-              </h3>
-              
-              <div className="space-y-3">
                 <button 
-                  className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
-                  disabled={!isConnected}
+                onClick={handleRequestService}
+                disabled={!isConnected || isRequesting || !serviceId}
+                className="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ExternalLink className="w-5 h-5" />
-                  <span>Interact with Agent</span>
+                {isRequesting ? 'Requesting...' : 'Request Service'}
                 </button>
-                
-                <button className="w-full border border-border-primary py-3 px-4 rounded-lg font-semibold hover:bg-bg-secondary transition-colors">
-                  Share Agent
-                </button>
-                
-                {isConnected && address === agent.owner && (
-                  <button className="w-full border border-purple-600 text-purple-600 py-3 px-4 rounded-lg font-semibold hover:bg-purple-50 transition-colors">
-                    Manage Agent
-                  </button>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              className="bg-white rounded-xl p-6 border border-border-primary"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
-              <h3 className="text-lg font-bold text-text-primary mb-4">
-                Agent Stats
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary">Active Users</span>
-                  <span className="font-semibold text-text-primary">{placeholderUsers}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary">Uptime</span>
-                  <span className="font-semibold text-text-primary">{placeholderUptime}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary">Rating</span>
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-warning fill-current" />
-                    <span className="font-semibold text-text-primary">
-                      {placeholderRating.toFixed(1)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary">Blockchain ID</span>
-                  <span className="font-semibold text-text-primary">#{agent.id}</span>
-                </div>
-              </div>
+              {!isConnected && <p className="text-center text-sm text-red-500 mt-2">Connect wallet to request</p>}
             </motion.div>
           </div>
         </div>

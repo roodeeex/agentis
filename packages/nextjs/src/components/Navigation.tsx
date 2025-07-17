@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Zap, Menu, X, Wallet } from 'lucide-react'
+import { Zap, Menu, X, Wallet, ChevronDown, ShoppingCart, Briefcase } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useWeb3 } from '@/lib/hooks/useWeb3'
 
 // Global variable to track if navbar has been animated
@@ -14,7 +14,6 @@ export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [hasAnimated, setHasAnimated] = useState(hasNavbarAnimated)
   const pathname = usePathname()
-  const router = useRouter()
   const { isConnected, address, connect, disconnect, isLoading, error } = useWeb3()
 
   useEffect(() => {
@@ -29,6 +28,11 @@ export default function Navigation() {
     { name: 'Home', href: '/' },
     { name: 'Marketplace', href: '/marketplace' },
     { name: 'Forge', href: '/forge' },
+  ]
+
+  const userMenuItems = [
+    { name: 'My Orders', href: '/my-orders', icon: ShoppingCart },
+    { name: 'My Creations', href: '/my-creations', icon: Briefcase },
   ]
 
   const isActive = (href: string) => pathname === href
@@ -82,16 +86,35 @@ export default function Navigation() {
 
           <div className="hidden md:flex items-center">
             {isConnected && address ? (
-              <div className="flex items-center space-x-3">
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {formatAddress(address)}
-                </span>
+              <div className="relative group">
+                <div className="flex items-center space-x-2 cursor-pointer bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm font-medium">
+                  <span>{formatAddress(address)}</span>
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+                <motion.div 
+                  className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-10 origin-top-right
+                             invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200"
+                  initial={{ y: -10 }}
+                  animate={{ y: 0 }}
+                >
+                  {userMenuItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <item.icon className="w-4 h-4 mr-2" />
+                      {item.name}
+                    </Link>
+                  ))}
+                  <div className="border-t border-gray-100 my-1"></div>
                 <button
                   onClick={disconnect}
-                  className="text-text-secondary hover:text-purple-600 transition-colors text-sm"
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                 >
                   Disconnect
                 </button>
+                </motion.div>
               </div>
             ) : (
               <motion.button
@@ -144,19 +167,32 @@ export default function Navigation() {
               ))}
               
               {isConnected && address ? (
-                <div className="flex flex-col space-y-2">
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <div className="flex items-center justify-between mb-2">
                   <span className="bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm font-medium text-center">
                     {formatAddress(address)}
                   </span>
                   <button
                     onClick={() => {
-                      disconnect()
-                      setIsMenuOpen(false)
+                        disconnect();
+                        setIsMenuOpen(false);
                     }}
-                    className="text-text-secondary hover:text-purple-600 transition-colors text-sm text-center"
+                      className="text-sm text-red-600"
                   >
                     Disconnect
                   </button>
+                  </div>
+                  {userMenuItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="flex items-center py-2 text-text-secondary hover:text-purple-600"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <item.icon className="w-4 h-4 mr-3" />
+                      {item.name}
+                    </Link>
+                  ))}
                 </div>
               ) : (
                 <motion.button
